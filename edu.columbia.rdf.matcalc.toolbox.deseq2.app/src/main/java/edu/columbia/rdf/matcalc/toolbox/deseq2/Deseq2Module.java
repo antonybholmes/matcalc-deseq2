@@ -28,10 +28,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.columbia.rdf.matcalc.MainMatCalcWindow;
-import edu.columbia.rdf.matcalc.toolbox.CalcModule;
+import edu.columbia.rdf.matcalc.toolbox.Module;
 import edu.columbia.rdf.matcalc.toolbox.deseq2.app.Deseq2Icon;
 
-public class Deseq2Module extends CalcModule implements ModernClickListener {
+public class Deseq2Module extends Module implements ModernClickListener {
 
   // private static final int DEFAULT_POINTS =
   // SettingsService.getInstance().getInt("pattern-discovery.cdf.points");
@@ -153,7 +153,8 @@ public class Deseq2Module extends CalcModule implements ModernClickListener {
      * writer.close(); }
      */
 
-    // Write phenotypes
+    // Write phenotypes. Need to maintain the same column order as in the
+    // matrix, otherwise DESeq2 will complain.
 
     Path phenFile = tmp.resolve("phenotypes.txt");
 
@@ -175,8 +176,11 @@ public class Deseq2Module extends CalcModule implements ModernClickListener {
       writer.close();
     }
 
+    // Save the matrix to file
     Path countsFile = tmp.resolve("counts.txt");
     mWindow.write(countsFile);
+    
+    // Call external R process
 
     String[] args = { R, PathUtils.toString(SCRIPT) };
 
@@ -209,12 +213,12 @@ public class Deseq2Module extends CalcModule implements ModernClickListener {
 
     Path normFile = tmp.resolve("counts_deseq2_normalized.txt");
     m = new MixedMatrixParser(1, 0, TextUtils.TAB_DELIMITER).parse(normFile);
-    mWindow.addToHistory("DESeq2 Normalized", m);
+    mWindow.history().addToHistory("DESeq2 Normalized", m);
 
     Path testFile = tmp.resolve(
         TextUtils.cat("deseq2_", g1.getName(), "_vs_", g2.getName(), ".txt"));
     m = new MixedMatrixParser(1, 0, TextUtils.TAB_DELIMITER).parse(testFile);
-    mWindow.addToHistory(
+    mWindow.history().addToHistory(
         TextUtils.cat("DESeq2 ", g1.getName(), " vs ", g2.getName()),
         m);
   }
