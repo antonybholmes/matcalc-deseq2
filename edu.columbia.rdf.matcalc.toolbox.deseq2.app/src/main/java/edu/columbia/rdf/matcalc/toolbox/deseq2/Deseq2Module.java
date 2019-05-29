@@ -163,13 +163,26 @@ public class Deseq2Module extends Module implements ModernClickListener {
     try {
       writer.write("sample\tphenotype");
       writer.newLine();
+      
+      System.err.println(groups);
 
       IterMap<Integer, List<XYSeries>> indices = XYSeries.indexGroupMap(m, groups);
-
-      for (Entry<Integer, List<XYSeries>> item : indices) {
-        writer.write(m.getColumnName(item.getKey()));
+      
+      for (int i = 0; i < m.getCols(); ++i) {
+        writer.write(m.getColumnName(i));
         writer.write(TextUtils.TAB_DELIMITER);
-        writer.write(item.getValue().get(0).getName());
+        
+        if (indices.containsKey(i)) {
+          List<XYSeries> item = indices.get(i);
+          
+          System.err.println(i + " " + m.getColumnName(i) + " " + item);
+          
+          writer.write(item.get(0).getName());
+        } else {
+          // Not assigned to a group, so use 'n/a'
+          writer.write(TextUtils.NA);
+        }
+        
         writer.newLine();
       }
     } finally {
